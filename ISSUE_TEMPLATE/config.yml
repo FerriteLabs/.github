@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/ferritelabs/ferrite/discussions/new?category=q-a
+    about: Use GitHub Discussions for questions and help requests.
+  - name: Share an idea
+    url: https://github.com/ferritelabs/ferrite/discussions/new?category=ideas
+    about: Use GitHub Discussions to propose ideas before opening a feature request.
+  - name: Security vulnerability
+    url: https://github.com/ferritelabs/.github/blob/main/SECURITY.md
+    about: Please report security issues privately — do not open a public issue.

@@ -5,6 +5,9 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/ferritelabs/ferrite/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.80%2B-orange)](https://www.rust-lang.org/)
 [![Docs](https://img.shields.io/badge/docs-ferrite.rs-blue)](https://ferrite.rs)
+[![GitHub Discussions](https://img.shields.io/github/discussions/ferritelabs/ferrite?logo=github&label=Discussions)](https://github.com/ferritelabs/ferrite/discussions)
+[![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/ferritelabs)
+[![Twitter](https://img.shields.io/badge/Twitter-@ferritelabs-1DA1F2?logo=twitter&logoColor=white)](https://twitter.com/ferritelabs)
 
 **The speed of memory, the capacity of disk, the economics of cloud.**
 
@@ -42,7 +45,7 @@ Ferrite is a high-performance, tiered-storage key-value store designed as a drop
 
 | Repository | Description | Status |
 |-----------|-------------|--------|
-| [**ferrite**](https://github.com/ferritelabs/ferrite) | Core database engine (Cargo workspace, 12 crates) | [![CI](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml) |
+| [**ferrite**](https://github.com/ferritelabs/ferrite) | Core database engine (Cargo workspace, 19 crates) | [![CI](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml) |
 | [**ferrite-docs**](https://github.com/ferritelabs/ferrite-docs) | Documentation website (Docusaurus) | [![CI](https://github.com/ferritelabs/ferrite-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite-docs/actions/workflows/ci.yml) |
 | [**ferrite-ops**](https://github.com/ferritelabs/ferrite-ops) | Docker, Helm, Grafana, packaging, scripts | [![CI](https://github.com/ferritelabs/ferrite-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite-ops/actions/workflows/ci.yml) |
 | [**ferrite-bench**](https://github.com/ferritelabs/ferrite-bench) | Performance benchmarks vs Redis, Dragonfly, KeyDB | [![Nightly](https://github.com/ferritelabs/ferrite-bench/actions/workflows/nightly-bench.yml/badge.svg)](https://github.com/ferritelabs/ferrite-bench/actions/workflows/nightly-bench.yml) |
@@ -78,6 +81,12 @@ redis-cli GET mykey
 - **Multi-model** — Key-value, vectors, full-text search, time-series, graph, documents
 - **Built in Rust** — Memory-safe, zero-cost abstractions, fearless concurrency
 - **io_uring-first** — Modern Linux I/O with automatic fallback on other platforms
+- **Agent Memory OS** — Mnemo: persistent, queryable memory for AI agents (LangChain, LlamaIndex, Letta)
+- **WASM In-DB Functions** — Forge: sandboxed user functions at the data layer
+- **Multi-Master CRDTs** — Concord: conflict-free replication for geo-distributed deployments
+- **Branchable State** — Chronicle: git-style branching and point-in-time restore
+- **Verifiable Audit** — Lucidity: tamper-evident Merkle audit log with ZK proofs
+- **CXL Tier-0 Memory** — Pangea: NUMA-aware allocator for CXL memory expansion
 
 ## License
 
