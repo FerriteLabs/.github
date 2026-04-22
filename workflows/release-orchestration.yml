@@ -1,0 +1,176 @@
+name: Release Orchestration
+
+# Coordinates a Ferrite release across every FerriteLabs repository.
+#
+# Trigger: manually (workflow_dispatch) with the new version tag, OR
+#          automatically when the `ferrite` repo publishes a GitHub release
+#          (via repository_dispatch from `ferrite/.github/workflows/release.yml`).
+#
+# Downstream repos that need a bump:
+#   - ferrite-ops      → Dockerfile FROM tag, Helm chart appVersion, install.sh default
+#   - ferrite-docs     → version sidecar / docs banner
+#   - homebrew-tap     → ferrite.rb url + sha256
+#   - vscode-ferrite   → package.json minimum-server-version (optional)
+#   - jetbrains-ferrite→ build.gradle.kts minimum-server-version (optional)
+#
+# Each downstream repo must expose a `version-bump.yml` workflow that accepts
+# a `version` input. This orchestrator triggers them in dependency order and
+# fails fast if any required repo hasn't accepted the bump.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. v0.4.0). Must match a tag pushed to ferrite."
+        required: true
+        type: string
+      include_optional:
+        description: "Also bump IDE plugin minimum-server-version (vscode + jetbrains)."
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: "Print the dispatch plan without triggering downstream workflows."
+        required: false
+        default: false
+        type: boolean
+  repository_dispatch:
+    types: [ferrite-released]
+
+permissions:
+  contents: read
+
+env:
+  # Required repos that MUST accept the bump (failure aborts the release).
+  REQUIRED_REPOS: "ferrite-ops ferrite-docs homebrew-tap"
+  # Optional repos that we'll attempt only when include_optional=true.
+  OPTIONAL_REPOS: "vscode-ferrite jetbrains-ferrite"
+
+jobs:
+  validate:
+    name: Validate release inputs
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      include_optional: ${{ steps.resolve.outputs.include_optional }}
+      dry_run: ${{ steps.resolve.outputs.dry_run }}
+    steps:
+      - name: Resolve version + flags
+        id: resolve
+        env:
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_INCLUDE_OPTIONAL: ${{ inputs.include_optional }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          version="${INPUT_VERSION:-$DISPATCH_VERSION}"
+          if [[ -z "$version" ]]; then
+            echo "::error::No version provided (workflow_dispatch input or repository_dispatch payload required)"
+            exit 1
+          fi
+          if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]]; then
+            echo "::error::Version '$version' does not match vX.Y.Z[-suffix]"
+            exit 1
+          fi
+          echo "version=$version"            >> "$GITHUB_OUTPUT"
+          echo "include_optional=${INPUT_INCLUDE_OPTIONAL:-false}" >> "$GITHUB_OUTPUT"
+          echo "dry_run=${INPUT_DRY_RUN:-false}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify ferrite tag exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: |
+          if ! gh api "repos/ferritelabs/ferrite/git/refs/tags/${VERSION}" >/dev/null 2>&1; then
+            echo "::error::Tag ${VERSION} does not exist in ferritelabs/ferrite"
+            exit 1
+          fi
+          echo "✓ tag ${VERSION} present in ferritelabs/ferrite"
+
+  dispatch-required:
+    name: Bump ${{ matrix.repo }}
+    runs-on: ubuntu-latest
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [ferrite-ops, ferrite-docs, homebrew-tap]
+    steps:
+      - name: Trigger version-bump workflow
+        env:
+          # ORG_RELEASE_PAT must be a fine-grained PAT with `actions: write` on
+          # every downstream repo. GITHUB_TOKEN cannot dispatch cross-repo workflows.
+          GH_TOKEN: ${{ secrets.ORG_RELEASE_PAT }}
+          REPO: ${{ matrix.repo }}
+          VERSION: ${{ needs.validate.outputs.version }}
+          DRY_RUN: ${{ needs.validate.outputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "[dry-run] would dispatch ferritelabs/${REPO}/.github/workflows/version-bump.yml@main version=${VERSION}"
+            exit 0
+          fi
+          gh workflow run version-bump.yml \
+            --repo "ferritelabs/${REPO}" \
+            --ref main \
+            --field "version=${VERSION}"
+          echo "✓ dispatched version-bump on ferritelabs/${REPO}"
+
+  dispatch-optional:
+    name: Bump ${{ matrix.repo }} (optional)
+    runs-on: ubuntu-latest
+    needs: [validate, dispatch-required]
+    if: needs.validate.outputs.include_optional == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [vscode-ferrite, jetbrains-ferrite]
+    steps:
+      - name: Trigger version-bump workflow
+        env:
+          GH_TOKEN: ${{ secrets.ORG_RELEASE_PAT }}
+          REPO: ${{ matrix.repo }}
+          VERSION: ${{ needs.validate.outputs.version }}
+          DRY_RUN: ${{ needs.validate.outputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "[dry-run] would dispatch ferritelabs/${REPO}/.github/workflows/version-bump.yml@main version=${VERSION}"
+            exit 0
+          fi
+          # Optional repos may not have version-bump.yml yet; treat 404 as a warning.
+          if ! gh workflow run version-bump.yml \
+                --repo "ferritelabs/${REPO}" \
+                --ref main \
+                --field "version=${VERSION}" 2>err.log; then
+            if grep -q "could not find any workflows" err.log; then
+              echo "::warning::ferritelabs/${REPO} has no version-bump.yml yet — skipping"
+            else
+              cat err.log >&2
+              exit 1
+            fi
+          fi
+
+  summary:
+    name: Release summary
+    runs-on: ubuntu-latest
+    needs: [validate, dispatch-required, dispatch-optional]
+    if: always() && needs.validate.result == 'success'
+    steps:
+      - name: Report
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+          DRY_RUN: ${{ needs.validate.outputs.dry_run }}
+          REQUIRED_RESULT: ${{ needs.dispatch-required.result }}
+          OPTIONAL_RESULT: ${{ needs.dispatch-optional.result }}
+        run: |
+          {
+            echo "## Release ${VERSION}"
+            echo ""
+            echo "- dry_run: ${DRY_RUN}"
+            echo "- required repos (ferrite-ops, ferrite-docs, homebrew-tap): ${REQUIRED_RESULT}"
+            echo "- optional repos (vscode-ferrite, jetbrains-ferrite): ${OPTIONAL_RESULT:-skipped}"
+            echo ""
+            echo "Track downstream PRs: https://github.com/pulls?q=is%3Apr+org%3Aferritelabs+%22${VERSION}%22"
+          } >> "$GITHUB_STEP_SUMMARY"
