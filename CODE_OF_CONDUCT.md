@@ -44,9 +44,9 @@ an individual is officially representing the community in public spaces.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-**security@ferritelabs.dev**.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be brought to the attention of repository maintainers through GitHub's repository moderation and reporting tools.
+
+Do not post sensitive report details in a public issue or discussion. Use an available private GitHub reporting channel, or make a non-sensitive request for a maintainer to establish private contact.
 
 All complaints will be reviewed and investigated promptly and fairly.
 

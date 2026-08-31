@@ -3,15 +3,15 @@
 [![CI](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml)
 [![Redis Compat](https://img.shields.io/badge/Redis_compatibility-~92%25-brightgreen)](https://github.com/ferritelabs/ferrite/blob/main/docs/REDIS_COMPAT.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/ferritelabs/ferrite/blob/main/LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.80%2B-orange)](https://www.rust-lang.org/)
-[![Docs](https://img.shields.io/badge/docs-ferrite.rs-blue)](https://ferrite.rs)
+[![Rust](https://img.shields.io/badge/rust-1.88%2B-orange)](https://www.rust-lang.org/)
+[![Docs](https://img.shields.io/badge/docs-GitHub-blue)](https://github.com/ferritelabs/ferrite-docs)
 [![GitHub Discussions](https://img.shields.io/github/discussions/ferritelabs/ferrite?logo=github&label=Discussions)](https://github.com/ferritelabs/ferrite/discussions)
 [![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/ferritelabs)
 [![Twitter](https://img.shields.io/badge/Twitter-@ferritelabs-1DA1F2?logo=twitter&logoColor=white)](https://twitter.com/ferritelabs)
 
 **The speed of memory, the capacity of disk, the economics of cloud.**
 
-Ferrite is a high-performance, tiered-storage key-value store designed as a drop-in Redis replacement. Built in Rust with epoch-based concurrency and io_uring-first persistence.
+Ferrite is a high-performance, tiered-storage key-value store designed as a drop-in Redis replacement. Built with Rust 1.88+, epoch-based concurrency, and io_uring-first persistence.
 
 ## Why Ferrite?
 
@@ -45,6 +45,7 @@ Ferrite is a high-performance, tiered-storage key-value store designed as a drop
 
 | Repository | Description | Status |
 |-----------|-------------|--------|
+| [**.github**](https://github.com/ferritelabs/.github) | Organization community health files and public profile | Public profile |
 | [**ferrite**](https://github.com/ferritelabs/ferrite) | Core database engine (Cargo workspace, 19 crates) | [![CI](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite/actions/workflows/ci.yml) |
 | [**ferrite-docs**](https://github.com/ferritelabs/ferrite-docs) | Documentation website (Docusaurus) | [![CI](https://github.com/ferritelabs/ferrite-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite-docs/actions/workflows/ci.yml) |
 | [**ferrite-ops**](https://github.com/ferritelabs/ferrite-ops) | Docker, Helm, Grafana, packaging, scripts | [![CI](https://github.com/ferritelabs/ferrite-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/ferritelabs/ferrite-ops/actions/workflows/ci.yml) |
@@ -57,14 +58,14 @@ Ferrite is a high-performance, tiered-storage key-value store designed as a drop
 
 ```bash
 # Install via Homebrew
-brew tap ferritelabs/ferrite && brew install ferrite
+brew tap ferritelabs/tap && brew install ferritelabs/tap/ferrite
 
 # Or build from source
 git clone https://github.com/ferritelabs/ferrite && cd ferrite
 cargo build --release && ./target/release/ferrite
 
-# Or use Docker
-docker compose up -d
+# Or use the current published container
+docker run --rm -p 6379:6379 ghcr.io/ferritelabs/ferrite:0.4.0
 ```
 
 ```bash
@@ -94,4 +95,4 @@ All FerriteLabs repositories are licensed under [Apache-2.0](https://www.apache.
 
 ## Quick Links
 
-📖 [Documentation](https://ferrite.rs) · 🐛 [Report a Bug](https://github.com/ferritelabs/ferrite/issues/new?template=bug_report.md) · 💡 [Request a Feature](https://github.com/ferritelabs/ferrite/issues/new?template=feature_request.md) · 💬 [Discussions](https://github.com/ferritelabs/ferrite/discussions) · 🔒 [Security Policy](https://github.com/ferritelabs/.github/blob/main/SECURITY.md)
+📖 [Documentation](https://github.com/ferritelabs/ferrite-docs) · 🐛 [Report a Bug](https://github.com/ferritelabs/ferrite/issues/new?template=bug_report.md) · 💡 [Request a Feature](https://github.com/ferritelabs/ferrite/issues/new?template=feature_request.md) · 💬 [Discussions](https://github.com/ferritelabs/ferrite/discussions) · 🔒 [Security Policy](https://github.com/ferritelabs/.github/blob/main/SECURITY.md)
